@@ -11,16 +11,24 @@ import java.util.ArrayList;
 
 public class AlarmAdapter extends RecyclerView.Adapter<AlarmAdapter.AlarmViewHolder> {
 
-    interface OnDeleteClickListener {
+    // Interfaces para eventos de clic
+    public interface OnDeleteClickListener {
         void onDeleteClick(int position);
+    }
+
+    public interface OnEditClickListener {
+        void onEditClick(int position);
     }
 
     private ArrayList<Alarm> alarmList;
     private OnDeleteClickListener deleteClickListener;
+    private OnEditClickListener editClickListener;
 
-    public AlarmAdapter(ArrayList<Alarm> alarmList, OnDeleteClickListener deleteClickListener) {
+    // Constructor con listeners para eliminar y editar
+    public AlarmAdapter(ArrayList<Alarm> alarmList, OnDeleteClickListener deleteClickListener, OnEditClickListener editClickListener) {
         this.alarmList = alarmList;
         this.deleteClickListener = deleteClickListener;
+        this.editClickListener = editClickListener;
     }
 
     @NonNull
@@ -36,7 +44,9 @@ public class AlarmAdapter extends RecyclerView.Adapter<AlarmAdapter.AlarmViewHol
         holder.timeTextView.setText("Hora: " + alarm.getTime());
         holder.messageTextView.setText("Mensaje: " + alarm.getMessage());
 
+        // Configurar clics para eliminar y editar
         holder.deleteButton.setOnClickListener(v -> deleteClickListener.onDeleteClick(position));
+        holder.editButton.setOnClickListener(v -> editClickListener.onEditClick(position));
     }
 
     @Override
@@ -46,13 +56,14 @@ public class AlarmAdapter extends RecyclerView.Adapter<AlarmAdapter.AlarmViewHol
 
     static class AlarmViewHolder extends RecyclerView.ViewHolder {
         TextView timeTextView, messageTextView;
-        Button deleteButton;
+        Button deleteButton, editButton;
 
         public AlarmViewHolder(@NonNull View itemView) {
             super(itemView);
             timeTextView = itemView.findViewById(R.id.timeTextView);
             messageTextView = itemView.findViewById(R.id.messageTextView);
             deleteButton = itemView.findViewById(R.id.deleteButton);
+            editButton = itemView.findViewById(R.id.buttonEdit); // Nuevo botón de editar
         }
     }
 }

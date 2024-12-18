@@ -121,4 +121,14 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         db.delete(TABLE_ALARMS, COLUMN_ALARM_ID + " = ?", new String[]{String.valueOf(id)});
         db.close();
     }
+    public boolean updateAlarm(int id, String time, String message) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put(COLUMN_ALARM_TIME, time);
+        values.put(COLUMN_ALARM_MESSAGE, message);
+
+        int rowsAffected = db.update(TABLE_ALARMS, values, COLUMN_ALARM_ID + " = ?", new String[]{String.valueOf(id)});
+        db.close();
+        return rowsAffected > 0; // Devuelve true si se actualizó al menos una fila
+    }
 }

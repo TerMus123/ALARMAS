@@ -31,6 +31,8 @@ public class AlarmActivity extends AppCompatActivity {
     private static final String PREFS_NAME = "AlarmPrefs";
     private static final int REQUEST_CODE_READ_EXTERNAL_STORAGE = 1001;
 
+    private int alarmId = -1; // ID de la alarma a editar (por defecto -1 para nuevas alarmas)
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -42,6 +44,20 @@ public class AlarmActivity extends AppCompatActivity {
         buttonSelectSound = findViewById(R.id.buttonSelectSound);
 
         dbHelper = new DatabaseHelper(this); // Inicializar la base de datos
+
+        // Verificar si hay una alarma para editar
+        if (getIntent().hasExtra("alarmId")) {
+            alarmId = getIntent().getIntExtra("alarmId", -1);
+            String time = getIntent().getStringExtra("alarmTime");
+            String message = getIntent().getStringExtra("alarmMessage");
+
+            // Configurar los valores existentes en los campos
+            editTextActivityName.setText(message);
+            int hour = Integer.parseInt(time.split(":")[0]);
+            int minute = Integer.parseInt(time.split(":")[1]);
+            timePicker.setHour(hour);
+            timePicker.setMinute(minute);
+        }
 
         // Inicializar seleccionador de sonidos
         ActivityResultLauncher<Intent> selectSoundLauncher = registerForActivityResult(
@@ -142,12 +158,22 @@ public class AlarmActivity extends AppCompatActivity {
                 alarmManager.setExact(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(), pendingIntent);
                 String formattedTime = String.format("%02d:%02d", hour, minute);
 
-                // Guardar la alarma en la base de datos
-                boolean isInserted = dbHelper.insertAlarm(formattedTime, activityName);
-                if (isInserted) {
-                    Toast.makeText(this, "Alarma guardada en la base de datos para " + formattedTime, Toast.LENGTH_SHORT).show();
+                if (alarmId != -1) {
+                    // Actualizar alarma existente
+                    boolean isUpdated = dbHelper.updateAlarm(alarmId, formattedTime, activityName);
+                    if (isUpdated) {
+                        Toast.makeText(this, "Alarma actualizada correctamente", Toast.LENGTH_SHORT).show();
+                    } else {
+                        Toast.makeText(this, "Error al actualizar la alarma", Toast.LENGTH_SHORT).show();
+                    }
                 } else {
-                    Toast.makeText(this, "Error al guardar la alarma en la base de datos", Toast.LENGTH_SHORT).show();
+                    // Guardar nueva alarma
+                    boolean isInserted = dbHelper.insertAlarm(formattedTime, activityName);
+                    if (isInserted) {
+                        Toast.makeText(this, "Alarma guardada en la base de datos para " + formattedTime, Toast.LENGTH_SHORT).show();
+                    } else {
+                        Toast.makeText(this, "Error al guardar la alarma en la base de datos", Toast.LENGTH_SHORT).show();
+                    }
                 }
             }
         } catch (SecurityException e) {

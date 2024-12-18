@@ -12,6 +12,8 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
 
+
+
     <TextView
         android:id="@+id/textViewAlarmListActivity"
         android:layout_width="263dp"

@@ -1,5 +1,6 @@
 package com.example.a1app;
 
+import android.content.Intent;
 import android.os.Bundle;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -22,15 +23,38 @@ public class AlarmListActivity extends AppCompatActivity {
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
 
         dbHelper = new DatabaseHelper(this);
-        alarmList = dbHelper.getAllAlarms(); // Obtén todas las alarmas de la base de datos
+        loadAlarms();
 
-        adapter = new AlarmAdapter(alarmList, position -> {
-            int alarmId = alarmList.get(position).getId();
-            dbHelper.deleteAlarm(alarmId);
-            alarmList.remove(position);
-            adapter.notifyItemRemoved(position);
-        });
+        adapter = new AlarmAdapter(alarmList,
+                position -> {
+                    // Eliminar alarma
+                    int alarmId = alarmList.get(position).getId();
+                    dbHelper.deleteAlarm(alarmId);
+                    alarmList.remove(position);
+                    adapter.notifyItemRemoved(position);
+                },
+                position -> {
+                    // Editar alarma
+                    Alarm alarm = alarmList.get(position);
+                    Intent intent = new Intent(AlarmListActivity.this, AlarmActivity.class);
+                    intent.putExtra("alarmId", alarm.getId());
+                    intent.putExtra("alarmTime", alarm.getTime());
+                    intent.putExtra("alarmMessage", alarm.getMessage());
+                    startActivity(intent);
+                }
+        );
 
         recyclerView.setAdapter(adapter);
+    }
+
+    private void loadAlarms() {
+        alarmList = dbHelper.getAllAlarms();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        loadAlarms();
+        adapter.notifyDataSetChanged();
     }
 }
